@@ -17,7 +17,7 @@ function UnitCard({ unit, imgType }) {
   const navigate = useNavigate();
   return (
     <div>
-      <div className="w-[200px] h-[300px] overflow-hidden  border-2 border-border-color rounded-md flex flex-col justify-between items-center">
+      <div className="w-[200px] h-[300px] overflow-hidden  border-2 border-border-color rounded-md flex flex-col justify-between items-center max-xs:scale-95">
         <div className="h-[200px] p-4 flex justify-center items-center">
           <img
             src={`/images/unit/pdf-${imgType}-${getRandomNumber(6)}.png`}

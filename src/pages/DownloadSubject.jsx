@@ -23,8 +23,7 @@ function DownloadSubject() {
   const [imgType, setImgType] = useState(
     unitImgType[Math.floor(Math.random() * unitImgType.length)]
   );
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const getSubject = async () => {
     const downloadedSub = await getFiles(subjectId);

@@ -24,11 +24,12 @@ export const deleteDownload = async (subjectId) => {
   db.delete(store_name, subjectId);
 };
 
-export const saveFiles = async (subject, filesArray) => {
+export const saveFiles = async (subject, units, unitBlobs) => {
   const db = await initDB();
   const download = {
     subject,
-    units: filesArray,
+    units,
+    unitBlobs,
   };
   db.put(store_name, download, subject._id);
 };

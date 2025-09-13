@@ -47,14 +47,7 @@ function DownloadPdfViewer() {
     const downloadedSubject = await getFiles(subjectId)  
     if(!downloadedSubject) return setError("Subject not found in storage.")
     
-    const units = downloadedSubject.units
-    let blob ;
-    units.forEach((unit)=>{
-      if(unit.id === unitId) {
-        blob = unit.blob
-      }
-    })
-
+    const blob = downloadedSubject.unitBlobs[unitId];
     if(!blob ) return setError("There is an error on getting downloaded unit")
     
     setfiledata(blob)

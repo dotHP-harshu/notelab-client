@@ -5,11 +5,17 @@ function SubjectCard({ subject }) {
   const navigate = useNavigate();
 
   return (
-    <div className="w-[300px] h-[250px] bg-surface-color border-l-6 border-border-color p-4 shrink-0 ">
+    <div className="w-[300px] h-[250px] bg-surface-color border-l-6 border-border-color p-4 shrink-0 max-xs:scale-95 ">
       <div className="w-full flex justify-between items-center">
         <div className="subject-img w-16 h-16 overflow-hidden p-2 bg-bg-sec-color">
           <img
-            src={subject.img ? `data:${subject.img.contentType};base64,${subject.img.data.toString("base64")}` : "/images/subject/sub-b.png"}
+            src={
+              subject.img
+                ? `data:${
+                    subject.img.contentType
+                  };base64,${subject.img.data.toString("base64")}`
+                : "/images/subject/sub-b.png"
+            }
             alt="s-img"
             className="w-full object-center"
           />

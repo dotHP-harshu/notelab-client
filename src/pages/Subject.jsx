@@ -32,6 +32,12 @@ function Subject() {
     unitImgType[Math.floor(Math.random() * unitImgType.length)]
   );
 
+  const [donwloadProgress, setDonwloadProgress] = useState({
+    total: 0,
+    completed: 0,
+    failed: [],
+  });
+
   const { isInstalled, installApp, deferredPrompt } = usePWAInstall();
 
   const getSubject = async () => {
@@ -55,17 +61,31 @@ function Subject() {
   const handleDownload = async () => {
     try {
       if (units.length === 0) return;
-      setIsDownLoading(true);
 
-      const unitArray = units.map(async (unit) => {
-        const { data, error } = await getUnitUrlApi(unit._id);
-        if (error) return;
-        const res = await fetch(data?.data?.url);
-        const blob = await res.blob();
-        return { id: unit._id, name: unit.name, blob };
-      });
-      const result = await Promise.all(unitArray);
-      await saveFiles(subject, result);
+      setIsDownLoading(true);
+      setDonwloadProgress({ total: units.length, completed: 0, failed: [] });
+
+      const unitBlobs = {};
+      for (const unit of units) {
+        try {
+          const { data, error } = await getUnitUrlApi(unit._id);
+          if (error) return;
+          const res = await fetch(data?.data?.url);
+          const blob = await res.blob();
+          unitBlobs[unit._id] = blob;
+          setDonwloadProgress((prev) => ({
+            ...prev,
+            completed: prev.completed + 1,
+          }));
+        } catch (error) {
+          setDonwloadProgress((prev) => ({
+            ...prev,
+            failed: [...prev.failed, unit._id],
+          }));
+        }
+      }
+
+      await saveFiles(subject, units, unitBlobs);
     } catch (error) {
       setError(error.message);
     }
@@ -173,30 +193,7 @@ function Subject() {
 
             {/* Functionality  */}
             <div className="py-6">
-              {isInstalled ? (
-                isDownloaded ? (
-                  <button
-                    onClick={() => navigate("/profile")}
-                    className="text-lg outline-none select-none font-semibold tracking-tight bg-primary-color px-4 py-1 rounded-sm cursor-pointer"
-                  >
-                    Go to Downloads
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleDownload}
-                    className="text-lg outline-none select-none font-semibold tracking-tight bg-primary-color px-4 py-1 rounded-sm cursor-pointer"
-                  >
-                    {isDownLoading ? (
-                      <LuLoaderCircle
-                        size={20}
-                        className="text-text-main animate-spin"
-                      />
-                    ) : (
-                      "Download"
-                    )}
-                  </button>
-                )
-              ) : (
+              {isInstalled && (
                 <>
                   <p>
                     Install <span className="font-bold">NoteLab's</span> Web App
@@ -209,6 +206,42 @@ function Subject() {
                     Install
                   </button>
                 </>
+              )}
+
+              {isDownLoading ? (
+                <div className="my-4">
+                  <p className="text-base max-xs:text-sm">
+                    Downloading: {donwloadProgress.completed}/
+                    {donwloadProgress.total}
+                  </p>
+                  {donwloadProgress.failed.length > 0 && (
+                    <>
+                      <p className="text-base max-xs:text-sm">
+                        Failed :{donwloadProgress.failed.length} unit(s)
+                      </p>
+                      <button
+                        onClick={handleDownload}
+                        className="text-lg outline-none select-none font-semibold tracking-tight bg-primary-color px-4 py-1 rounded-sm cursor-pointer"
+                      >
+                        Download
+                      </button>
+                    </>
+                  )}
+                </div>
+              ) : isDownloaded ? (
+                <button
+                  onClick={() => navigate("/profile")}
+                  className="text-lg outline-none select-none font-semibold tracking-tight bg-primary-color px-4 py-1 rounded-sm cursor-pointer"
+                >
+                  Go to downloads
+                </button>
+              ) : (
+                <button
+                  onClick={handleDownload}
+                  className="text-lg outline-none select-none font-semibold tracking-tight bg-primary-color px-4 py-1 rounded-sm cursor-pointer"
+                >
+                  Download
+                </button>
               )}
             </div>
             {/* Functionality  */}

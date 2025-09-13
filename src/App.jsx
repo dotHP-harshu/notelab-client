@@ -1,7 +1,5 @@
 import React from 'react'
-import Logo from './components/Logo'
-import Loader from './components/Loader'
-import { BrowserRouter, createBrowserRouter, Navigate } from 'react-router'
+import { createBrowserRouter, Navigate } from "react-router";
 import Login from './pages/Login'
 import Home from './pages/Home'
 import Subject from './pages/Subject'
