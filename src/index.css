@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "main";
+  src: url("/fonts/Montserrat-Regular.ttf");
+}
+
+@theme {
+    --color-primary-color: #FF9900;     /* Brand orange from logo */
+  --color-accent-color: #D45A00;      /* Burnt orange for hover/CTA contrast */
+  --color-bg-color: #F6F1E9;          /* Soft almond-cream background */
+  --color-bg-sec-color: #E4D8C4;      /* Muted sand for secondary sections/cards */
+  --color-surface-color: #D6C7B0;     /* Clay-like tone for elevated surfaces */
+  --color-border-color: #BFAF99;      /* Warm taupe-gray for dividers and outlines */
+  --color-text-main: #2E2B26;         /* Deep warm black for strong readability */
+  --color-text-muted: #776B5D;        /* Earthy stone-gray for subtitles/descriptions */
+  --color-success: #6DAE4F;           /* Natural green, fresh but not neon */
+  --color-warning: #FFB84D;           /* Muted amber for non-critical warnings */
+  --color-error: #D6453D;             /* Soft red with warmth */
+  --font-main: "main";
+  --breakpoint-xs:30rem;
+}
+
+body,
+html {
+  height: 100%;
+  width: 100%;
+  background: var(--color-bg-color);
+  color: var(--color-text-main);
+}
+
+.scroller::-webkit-scrollbar {
+  background-color: transparent;
+  height: 7px;
+}
+.scroller::-webkit-scrollbar-thumb {
+  border-radius: 50px;
+  background: #e6d5ca84;
+  cursor: pointer;
+}
+.scroller::-webkit-scrollbar-corner {
+  width: 5px;
+  height: 5px;
+  border-radius: 50px;
+  background: #e6d5ca;
+}
