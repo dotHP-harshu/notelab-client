@@ -16,7 +16,6 @@ import AllSubject from "./pages/AllSubject";
 import { PWAInstallProvider } from "./context/PWAInstallProvider";
 import DownloadSubject from "./pages/DownloadSubject";
 import DownloadPdfViewer from "./pages/DownloadPdfViewer";
-import { UserProvider } from "./context/UserContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();
@@ -108,9 +107,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <PWAInstallProvider>
-        <UserProvider>
-          <RouterProvider router={routes} />
-        </UserProvider>
+        <RouterProvider router={routes} />
       </PWAInstallProvider>
     </QueryClientProvider>
   );

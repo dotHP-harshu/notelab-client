@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Logo from "../components/Logo";
 
 function Login() {
@@ -9,6 +9,8 @@ function Login() {
       navigate("/login");
     }
   };
+
+  useEffect(() => {}, []);
 
   return (
     <div className="w-full min-h-dvh flex justify-center items-center">
