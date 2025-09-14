@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router";
 
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import { getUser, setUser } from "../utils/auth";
+import { getUserApi } from "../service/api";
 
 function ProtectedRoutes({ children }) {
   const navigate = useNavigate();

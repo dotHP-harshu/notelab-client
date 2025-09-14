@@ -118,7 +118,7 @@ function Home() {
             {/* header  */}
             {/* card-container  */}
             <div className="scroller w-full flex overflow-x-scroll gap-4 flex-nowrap py-4 relative">
-              <div className="absolute top-0 right-0 bg-[#00000048] w-fit h-full flex justify-center items-center z-30">
+              <div className="absolute top-0 right-0 bg-[#84848423] w-fit h-full flex justify-center items-center z-30">
                 <BiArrowToRight size={16} className="text-primary-color" />
               </div>
               {semesterSubjectError && (
