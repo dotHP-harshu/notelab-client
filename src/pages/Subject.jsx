@@ -86,7 +86,7 @@ function Subject() {
       await saveFiles(subject, units, unitBlobs);
       navigate("/profile");
     } catch (error) {
-      setError(error.message);
+      console.error(error);
     }
   };
 
