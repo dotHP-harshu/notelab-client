@@ -1,21 +1,25 @@
-import React from 'react'
+import React from "react";
 import { createBrowserRouter, Navigate } from "react-router";
-import Login from './pages/Login'
-import Home from './pages/Home'
-import Subject from './pages/Subject'
-import LoginVerify from './pages/LoginVerify'
-import { RouterProvider } from 'react-router/dom'
-import Admin from './pages/Admin'
-import ProtectedRoutes from './components/ProtectedRoutes'
-import AdminProtected from './components/AdminProtected'
-import PdfViewer from './pages/PdfViewer'
-import Profile from './pages/Profile'
+import Login from "./pages/Login";
+import Home from "./pages/Home";
+import Subject from "./pages/Subject";
+import LoginVerify from "./pages/LoginVerify";
+import { RouterProvider } from "react-router/dom";
+import Admin from "./pages/Admin";
+import ProtectedRoutes from "./components/ProtectedRoutes";
+import AdminProtected from "./components/AdminProtected";
+import PdfViewer from "./pages/PdfViewer";
+import Profile from "./pages/Profile";
 // import Bookmark from './pages/Bookmark'
-import Search from './pages/Search'
-import AllSubject from './pages/AllSubject'
-import { PWAInstallProvider } from './context/PWAInstallProvider'
+import Search from "./pages/Search";
+import AllSubject from "./pages/AllSubject";
+import { PWAInstallProvider } from "./context/PWAInstallProvider";
 import DownloadSubject from "./pages/DownloadSubject";
 import DownloadPdfViewer from "./pages/DownloadPdfViewer";
+import { UserProvider } from "./context/UserContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 function App() {
   // Setup Routes
@@ -102,10 +106,14 @@ function App() {
   ]);
 
   return (
-    <PWAInstallProvider>
-      <RouterProvider router={routes} />
-    </PWAInstallProvider>
+    <QueryClientProvider client={queryClient}>
+      <PWAInstallProvider>
+        <UserProvider>
+          <RouterProvider router={routes} />
+        </UserProvider>
+      </PWAInstallProvider>
+    </QueryClientProvider>
   );
 }
 
-export default App
+export default App;

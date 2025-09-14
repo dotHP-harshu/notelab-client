@@ -9,83 +9,38 @@ import { getSubjectsApi, searchSubjectApi } from "../service/api";
 import { MdSignalWifiConnectedNoInternet4 } from "react-icons/md";
 import Loader from "../components/Loader";
 import Navbar from "../components/Navbar";
+import { useQuery } from "@tanstack/react-query";
+import { BiArrowToRight } from "react-icons/bi";
 
 function Home() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [networkError, setNetworkError] = useState(false);
-  const [subjects, setSubjects] = useState([]);
-  const [semesterSubjects , setSemesterSubjects ] = useState([])
-  const [isLoading, setIsLoading] = useState({
-    semester: false,
-    recent: false,
-    page: true,
-  });
 
   const reloadPage = () => {
     window.location.reload();
   };
 
-  const getSemesterSubjects = useCallback(async () => {
-    setNetworkError(false);
-    setIsLoading((prev) => ({ ...prev, semester: true }));
-    try {
-      const { data, error } = await searchSubjectApi("semester", 1, 5);
-
-      if (error) {
-        if (error.message === "network error") {
-          setIsLoading((prev) => ({ ...prev, page: false }));
-          setNetworkError(true);
-        }
-        return setError(error.message);
-      }
-      const semesterSubs = data?.data?.subjects;
-
-      setSemesterSubjects([...semesterSubs]);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading((prev) => ({ ...prev, semester: false }));
-    }
+  const {
+    data: semesterSubjects,
+    isLoading: isLoadingSemesterSubjects,
+    error: semesterSubjectError,
+  } = useQuery({
+    queryKey: ["subjects", "semester"],
+    queryFn: () =>
+      searchSubjectApi("semester", 1, 5).then((res) => res.data.data.subjects),
+    staleTime: 60 * 60 * 1000,
   });
 
-  const getSubjects = useCallback(async () => {
-    setNetworkError(false);
-    setIsLoading((prev) => ({ ...prev, recent: true }));
-    try {
-      const { data, error } = await getSubjectsApi(1, 5);
-
-      if (error) {
-        if (error.message === "network error") {
-          setIsLoading((prev) => ({ ...prev, page: false }));
-
-          setNetworkError(true);
-        }
-        return setError(error.message);
-      }
-      const loadedSubjects = data?.data?.subjects;
-
-      setSubjects([...loadedSubjects]);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading((prev) => ({ ...prev, recent: false }));
-    }
+  const {
+    data: recentSubjects,
+    isLoading: isLoadingRecentSubject,
+    error: recentSubjectError,
+  } = useQuery({
+    queryKey: ["subject", "recent"],
+    queryFn: () => getSubjectsApi(1, 5).then((res) => res.data.data.subjects),
+    staleTime: 60 * 60 * 1000,
   });
-
-  useEffect(() => {
-    getSubjects();
-    getSemesterSubjects();
-    setIsLoading((prev) => ({ ...prev, page: false }));
-  }, []);
-
-  if (isLoading.page) {
-    return (
-      <div className="h-dvh w-full flex justify-center items-center">
-        <Loader />
-      </div>
-    );
-  }
 
   return (
     <>
@@ -162,8 +117,16 @@ function Home() {
             </div>
             {/* header  */}
             {/* card-container  */}
-            <div className="scroller w-full flex overflow-x-scroll gap-4 flex-nowrap py-4">
-              {isLoading.semester ? (
+            <div className="scroller w-full flex overflow-x-scroll gap-4 flex-nowrap py-4 relative">
+              <div className="absolute top-0 right-0 bg-[#00000048] w-fit h-full flex justify-center items-center">
+                <BiArrowToRight size={16} className="text-primary-color" />
+              </div>
+              {semesterSubjectError && (
+                <p className="text-sm text-error">
+                  {semesterSubjectError.message}
+                </p>
+              )}
+              {isLoadingSemesterSubjects ? (
                 <Loader />
               ) : semesterSubjects.length === 0 ? (
                 <p>There is no subject.</p>
@@ -192,13 +155,23 @@ function Home() {
             </div>
             {/* header  */}
             {/* card-container  */}
-            <div className="scroller w-full flex overflow-x-scroll gap-4 flex-nowrap py-4">
-              {isLoading.semester ? (
+            <div className="scroller w-full flex overflow-x-scroll gap-4 flex-nowrap py-4 relative">
+              <div className="absolute top-0 right-0 bg-[#00000048] w-fit h-full flex justify-center items-center">
+                <BiArrowToRight size={16} className="text-primary-color" />
+              </div>
+              {recentSubjectError && (
+                <p className="text-sm text-error">
+                  {recentSubjectError.message}
+                </p>
+              )}
+              {isLoadingRecentSubject ? (
                 <Loader />
-              ) : subjects.length === 0 ? (
+              ) : recentSubjects.length === 0 ? (
                 <p>There is no subject.</p>
               ) : (
-                subjects.map((sub, i) => <SubjectCard subject={sub} key={i} />)
+                recentSubjects.map((sub, i) => (
+                  <SubjectCard subject={sub} key={i} />
+                ))
               )}
             </div>
             {/* card-container  */}

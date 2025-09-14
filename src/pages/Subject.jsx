@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import UnitCard from "../components/UnitCard";
-import { data, NavLink, useNavigate, useParams } from "react-router";
-import Error from "../components/Error";
+import { useNavigate, useParams } from "react-router";
 import { getOneSubjectApi, getUnitApi, getUnitUrlApi } from "../service/api";
 import Loader from "../components/Loader";
 import Navbar from "../components/Navbar";
@@ -11,21 +10,14 @@ import { MdSignalWifiConnectedNoInternet4 } from "react-icons/md";
 import { BsArrowLeft } from "react-icons/bs";
 import { usePWAInstall } from "../context/PWAInstallProvider";
 import { getFiles, saveFiles } from "../service/indexDb";
-import { LuLoaderCircle } from "react-icons/lu";
+import { useQuery } from "@tanstack/react-query";
 
 const unitImgType = ["a", "b", "c"];
 
 function Subject() {
   const navigate = useNavigate();
   const { subjectId } = useParams();
-  const [units, setUnits] = useState([]);
-  const [error, setError] = useState(null);
-  const [subject, setSubject] = useState(null);
   const [networkError, setNetworkError] = useState(false);
-  const [isLoading, setIsLoading] = useState({
-    page: true,
-    units: true,
-  });
   const [isDownLoading, setIsDownLoading] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [imgType, setImgType] = useState(
@@ -40,23 +32,29 @@ function Subject() {
 
   const { isInstalled, installApp, deferredPrompt } = usePWAInstall();
 
-  const getSubject = async () => {
-    try {
-      const { data, error } = await getOneSubjectApi(subjectId);
-      if (error) {
-        if (error.message === "network error") {
-          setNetworkError(true);
-        }
-        return setError(error?.message);
-      }
+  const {
+    data: subject,
+    error: subjectError,
+    isError,
+    isLoading: isLoadingPage,
+    refetch: retrySubject,
+  } = useQuery({
+    queryKey: ["subject", subjectId],
+    queryFn: () =>
+      getOneSubjectApi(subjectId).then((res) => res.data.data.subject),
+    staleTime: 60 * 60 * 1000,
+  });
 
-      setSubject(data.data.subject);
-    } catch (error) {
-      setError(error?.message);
-    } finally {
-      setIsLoading((prev) => ({ ...prev, page: false }));
-    }
-  };
+  const {
+    data: units,
+    isLoading: isLoadingUnits,
+    error: unitError,
+    refetch: retryUnit,
+  } = useQuery({
+    queryKey: ["units", subjectId],
+    queryFn: () => getUnitApi(subjectId).then((res) => res.data.data.units),
+    staleTime: 60 * 60 * 1000,
+  });
 
   const handleDownload = async () => {
     try {
@@ -84,24 +82,11 @@ function Subject() {
           }));
         }
       }
-
+      setIsDownloaded(true);
       await saveFiles(subject, units, unitBlobs);
+      navigate("/profile");
     } catch (error) {
       setError(error.message);
-    }
-  };
-
-  const getUnits = async () => {
-    try {
-      const { data, error } = await getUnitApi(subjectId);
-      if (error) return setError(error.message);
-
-      const loadedUnits = data?.data?.units;
-      setUnits([...loadedUnits]);
-    } catch (error) {
-      setError(error?.message);
-    } finally {
-      setIsLoading((prev) => ({ ...prev, units: false }));
     }
   };
 
@@ -115,17 +100,31 @@ function Subject() {
   };
 
   useEffect(() => {
-    getUnits();
-    getSubject();
     checkIsDownloaded();
   }, []);
 
-  if (isLoading.page) {
+  if (isLoadingPage) {
     return (
       <div className="h-dvh w-full flex justify-center items-center">
         <Loader />
       </div>
     );
+  }
+  if (subjectError || unitError) {
+    <div className="h-[70dvh] w-full flex flex-col justify-center items-center">
+      <p className="text-base max-xs:text-sm font-main text-text-muted font-bold tracking-tight">
+        {subjectError ? subjectError.message : unitError.message}
+      </p>
+      <button
+        onClick={() => {
+          retrySubject();
+          retryUnit();
+        }}
+        className="text-base bg-primary-color border-none outline-none rounded-sm cursor-pointer"
+      >
+        Retry
+      </button>
+    </div>;
   }
 
   return (
@@ -138,8 +137,6 @@ function Subject() {
       </div>
 
       <section className="px-[10vw]">
-        {error && <Error error={error} setError={setError} />}
-
         {networkError ? (
           <div className="h-[70dvh] w-full flex flex-col justify-center items-center">
             <MdSignalWifiConnectedNoInternet4 className="text-9xl text-text-muted" />
@@ -193,7 +190,7 @@ function Subject() {
 
             {/* Functionality  */}
             <div className="py-6">
-              {isInstalled && (
+              {isInstalled ? (
                 <>
                   <p>
                     Install <span className="font-bold">NoteLab's</span> Web App
@@ -206,9 +203,7 @@ function Subject() {
                     Install
                   </button>
                 </>
-              )}
-
-              {isDownLoading ? (
+              ) : isDownLoading ? (
                 <div className="my-4">
                   <p className="text-base max-xs:text-sm">
                     Downloading: {donwloadProgress.completed}/
@@ -247,16 +242,22 @@ function Subject() {
             {/* Functionality  */}
 
             <div>
-              <h3 className="text-2xl py-6">Chapters or Parts</h3>
-              <div className="w-full grid grid-cols-[repeat(auto-fill,minmax(200px,200px))] justify-evenly gap-4">
-                {units.length === 0 ? (
-                  <p>There is not unit in this Subject. </p>
-                ) : (
-                  units.map((unit, index) => (
-                    <UnitCard key={index} unit={unit} imgType={imgType} />
-                  ))
-                )}
-              </div>
+              {isLoadingUnits ? (
+                <Loader />
+              ) : (
+                <>
+                  <h3 className="text-2xl py-6">Chapters or Parts</h3>
+                  <div className="w-full grid grid-cols-[repeat(auto-fill,minmax(200px,200px))] justify-evenly gap-4">
+                    {units.length === 0 ? (
+                      <p>There is not unit in this Subject. </p>
+                    ) : (
+                      units.map((unit, index) => (
+                        <UnitCard key={index} unit={unit} imgType={imgType} />
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </main>
         )}
